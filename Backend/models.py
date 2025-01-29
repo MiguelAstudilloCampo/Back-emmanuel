@@ -7,7 +7,7 @@ tipo_rol=[
 
 
 class Usuario(models.Model):
-    identificacion = models.CharField(max_length=255)
+    identificacion = models.CharField(max_length=255, unique=True)
     nombre = models.CharField(max_length=255) 
     correo = models.CharField(max_length=255) 
     telefono = models.CharField(max_length=255) 

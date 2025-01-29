@@ -1,14 +1,26 @@
 from Backend.models import Predio
 from Backend.serializers.Predio import PredioSerializer
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-import os
-from django.conf import settings
+from rest_framework.response import Response 
+from rest_framework import status 
+from decouple import config
+import pyrebase
 
-# Directorio local para guardar imágenes
-MEDIA_ROOT = settings.MEDIA_ROOT  # El directorio base para guardar archivos en tu proyecto Django
-MEDIA_URL = settings.MEDIA_URL  # URL base para acceder a los archivos
+# Configuración de Firebase
+config = {
+    "apiKey": config("api_key"),
+    "authDomain": "senauthenticator.firebaseapp.com",
+    "projectId": "senauthenticator",
+    "storageBucket": "senauthenticator.appspot.com",
+    "messagingSenderId": "488326704430",
+    "appId": "1:488326704430:web:4cd223f4443303b9b71ebf",
+    "measurementId": "G-GP2WL4P876",
+  "service_account": "FireBaseProjecto.json",
+  "databaseURL":"https://senauthenticator-default-rtdb.firebaseio.com/"
+}
+
+firebase_storage = pyrebase.initialize_app(config)
+storage = firebase_storage.storage()
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def predio_controlador(request, pk=None):
@@ -16,7 +28,7 @@ def predio_controlador(request, pk=None):
         try:
             predio = Predio.objects.get(pk=pk)
         except Predio.DoesNotExist:
-            return Response({'error': 'Predio no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Objeto no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == 'GET':
             serializer = PredioSerializer(predio)
@@ -25,17 +37,12 @@ def predio_controlador(request, pk=None):
         elif request.method == 'PUT':
             if 'foto_predio' in request.FILES:
                 foto = request.FILES['foto_predio']
-                
-                # Crear una ruta de archivo única para guardar la imagen
-                file_path = os.path.join(MEDIA_ROOT, f"predios/{foto.name}")
-                
-                # Guardar la imagen localmente
-                with open(file_path, 'wb') as f:
-                    for chunk in foto.chunks():
-                        f.write(chunk)
+                file_bytes = foto.read()  # Leer el archivo directamente
 
-                # URL de la imagen guardada
-                image_url = os.path.join(MEDIA_URL, f"predios/{foto.name}")
+                # Subir el archivo a Firebase Storage directamente
+                storage_path = f"predios/{foto.name}"
+                storage.child(storage_path).put(file_bytes)  # Subir los bytes del archivo
+                image_url = storage.child(storage_path).get_url(None)  # Obtener la URL
 
                 # Actualizar el campo de imagen en la solicitud
                 request.data['foto_predio'] = image_url
@@ -52,25 +59,20 @@ def predio_controlador(request, pk=None):
 
     else:
         if request.method == 'GET':
-            predios = Predio.objects.all()
-            serializer = PredioSerializer(predios, many=True)
+            objetos = Predio.objects.all()
+            serializer = PredioSerializer(objetos, many=True)
             return Response(serializer.data)
 
         elif request.method == 'POST':
             try:
                 if 'foto_predio' in request.FILES:
                     foto = request.FILES['foto_predio']
-                    
-                    # Crear una ruta de archivo única para guardar la imagen
-                    file_path = os.path.join(MEDIA_ROOT, f"predios/{foto.name}")
-                    
-                    # Guardar la imagen localmente
-                    with open(file_path, 'wb') as f:
-                        for chunk in foto.chunks():
-                            f.write(chunk)
+                    file_bytes = foto.read()  # Leer el archivo directamente
 
-                    # URL de la imagen guardada
-                    image_url = os.path.join(MEDIA_URL, f"predios/{foto.name}")
+                    # Subir el archivo a Firebase Storage
+                    storage_path = f"predios/{foto.name}"
+                    storage.child(storage_path).put(file_bytes)  # Subir los bytes del archivo
+                    image_url = storage.child(storage_path).get_url(None)  # Obtener la URL
 
                     # Agregar la URL de la imagen al request data
                     request.data['foto_predio'] = image_url
