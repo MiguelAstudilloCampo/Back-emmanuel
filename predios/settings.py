@@ -86,13 +86,16 @@ WSGI_APPLICATION = 'predios.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'PruebaBD',
+        'USER':'root',
+        'PASSWORD':'Ruffito202104',
+        'HOST':'localhost',
+        'PORT':'3308'
+    }
 }
 
-DATABASES['default'] = dj_database_url.parse(config("DATABASE_URL"))
-
+# DATABASES['default'] = dj_database_url.parse(config("DATABASE_URL"))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -168,6 +171,8 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+AUTH_USER_MODEL = 'Backend.Usuario'
 
 # autoriza rutas para poderse ejecutar (en este caso la de Next.js y la de Flutter)
 CORS_ALLOWED_ORIGINS = [
