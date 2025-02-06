@@ -53,15 +53,18 @@ def usuario_controlador(request, pk=None):
 
         elif request.method == 'POST':
             try:
-                serializer = UsuarioSerializer(data=request.data)
-
-                if serializer.is_valid():
-                    # No es necesario encriptar la contraseña manualmente, el serializador lo hará
-                    user = serializer.save()
+                # Usar el UsuarioManager para crear el usuario
+                usuario_data = request.data
+                password = usuario_data.pop('password', None)  # No encriptamos aquí, el modelo lo hace
+                if password:
+                    user = Usuario.objects.create_user(**usuario_data, password=password)
 
                     # Generar los tokens JWT
                     refresh = RefreshToken.for_user(user)
                     access_token = str(refresh.access_token)
+
+                    # Serializar el usuario
+                    serializer = UsuarioSerializer(user)
 
                     response = Response({'usuario': serializer.data}, status=status.HTTP_201_CREATED)
 
@@ -75,8 +78,9 @@ def usuario_controlador(request, pk=None):
                     )
 
                     return response
-
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'error': 'La contraseña es obligatoria'}, status=status.HTTP_400_BAD_REQUEST)
+                
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

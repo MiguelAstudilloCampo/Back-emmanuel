@@ -13,12 +13,24 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'correo': {'required': True},
             'telefono': {'required': True},
             'rol_usuario': {'required': False},
+            'tipo_sexo': {'required': False},
+            'tipo_documento': {'required': False},
+            'edad': {'required': False},
+            'Organización_comunitaria': {'required': False},
+            'etnia': {'required': False},
+            'conflicto_armado': {'required': False},
+            'municipio_predio': {'required': False},
+            'barrio_predio': {'required': False},
+            'Vitalidad': {'required': False},
+            'grado_estudios': {'required': False},
+            'servicio_salud': {'required': False},
+            'ocupacion': {'required': False},
         }
 
     def create(self, validated_data):
         # Encriptar la contraseña antes de guardar
         password = validated_data.pop('password', None)  # Eliminar 'password' del diccionario de validated_data
-        user = Usuario.objects.create(**validated_data)  # Crear el usuario sin la contraseña
+        user = Usuario(**validated_data)  # Crear el usuario sin la contraseña
         if password:
             user.set_password(password)  # Establecer la contraseña encriptada
         user.save()

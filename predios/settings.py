@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'predios.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'PruebaBD',
+        'NAME': 'pruebabd',
         'USER':'root',
         'PASSWORD':'Ruffito202104',
         'HOST':'localhost',
